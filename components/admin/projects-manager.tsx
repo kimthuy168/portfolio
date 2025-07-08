@@ -3,9 +3,16 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Plus, Edit, Trash2, ExternalLink, Github } from "lucide-react"
-import type { Project } from "@/lib/db/schema"
+import type { NewProject, Project } from "@/lib/db/schema"
 import { useToast } from "@/hooks/use-toast"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog"
 import { Button } from "../ui/button"
 import { Label } from "../ui/label"
 import { Input } from "../ui/input"
@@ -14,24 +21,28 @@ import { Switch } from "../ui/switch"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge"
 
-export function ProjectsManager() {
+type ProjectFormData = Omit<NewProject, "technologies"> & {
+  technologies: string
+}
+export function ProjectsManager({ userId }: { userId: string }) {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { toast } = useToast()
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    longDescription: "",
-    imageUrl: "",
-    demoUrl: "",
-    githubUrl: "",
-    technologies: "",
-    featured: false,
-    published: true,
-  })
+  const [formData, setFormData] = useState<ProjectFormData>({
+  userId: userId,
+  title: "",
+  description: "",
+  longDescription: "",
+  imageUrl: "",
+  demoUrl: "",
+  githubUrl: "",
+  technologies: "",
+  featured: false,
+  published: true,
+});
 
   useEffect(() => {
     fetchProjects()
@@ -58,10 +69,8 @@ export function ProjectsManager() {
 
     const projectData = {
       ...formData,
-      technologies: formData.technologies
-        .split(",")
-        .map((tech) => tech.trim())
-        .filter(Boolean),
+      userId: userId,
+      technologies: formData.technologies.split(",").map((tech) => tech.trim()),
     }
 
     try {
@@ -99,13 +108,14 @@ export function ProjectsManager() {
   const handleEdit = (project: Project) => {
     setEditingProject(project)
     setFormData({
+      userId: userId,
       title: project.title,
       description: project.description,
       longDescription: project.longDescription || "",
       imageUrl: project.imageUrl || "",
       demoUrl: project.demoUrl || "",
       githubUrl: project.githubUrl || "",
-      technologies: project.technologies?.join(", ") || "",
+      technologies: project.technologies?.join(", ") ?? "",
       featured: project.featured || false,
       published: project.published || true,
     })
@@ -140,6 +150,7 @@ export function ProjectsManager() {
 
   const resetForm = () => {
     setFormData({
+      userId: '',
       title: "",
       description: "",
       longDescription: "",
@@ -182,7 +193,9 @@ export function ProjectsManager() {
             <DialogHeader>
               <DialogTitle>{editingProject ? "Edit Project" : "Add New Project"}</DialogTitle>
               <DialogDescription>
-                {editingProject ? "Update project details" : "Create a new project for your portfolio"}
+                {editingProject
+                  ? "Update project details"
+                  : "Create a new project for your portfolio"}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -193,7 +206,7 @@ export function ProjectsManager() {
                 </div>
                 <div>
                   <Label htmlFor="imageUrl">Image URL</Label>
-                  <Input id="imageUrl" name="imageUrl" value={formData.imageUrl} onChange={handleChange} />
+                  <Input id="imageUrl" name="imageUrl" value={formData?.imageUrl!} onChange={handleChange} />
                 </div>
               </div>
               <div>
@@ -211,7 +224,7 @@ export function ProjectsManager() {
                 <Textarea
                   id="longDescription"
                   name="longDescription"
-                  value={formData.longDescription}
+                  value={formData?.longDescription!}
                   onChange={handleChange}
                   rows={4}
                 />
@@ -219,11 +232,11 @@ export function ProjectsManager() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="demoUrl">Demo URL</Label>
-                  <Input id="demoUrl" name="demoUrl" value={formData.demoUrl} onChange={handleChange} />
+                  <Input id="demoUrl" name="demoUrl" value={formData?.demoUrl!} onChange={handleChange} />
                 </div>
                 <div>
                   <Label htmlFor="githubUrl">GitHub URL</Label>
-                  <Input id="githubUrl" name="githubUrl" value={formData.githubUrl} onChange={handleChange} />
+                  <Input id="githubUrl" name="githubUrl" value={formData?.githubUrl!} onChange={handleChange} />
                 </div>
               </div>
               <div>
@@ -240,16 +253,20 @@ export function ProjectsManager() {
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="featured"
-                    checked={formData.featured}
-                    onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, featured: checked }))}
+                    checked={formData?.featured!}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, featured: checked }))
+                    }
                   />
                   <Label htmlFor="featured">Featured</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="published"
-                    checked={formData.published}
-                    onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, published: checked }))}
+                    checked={formData?.published!}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, published: checked }))
+                    }
                   />
                   <Label htmlFor="published">Published</Label>
                 </div>

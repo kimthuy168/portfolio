@@ -1,8 +1,31 @@
+
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Github, Linkedin, Mail, Download } from "lucide-react"
 import Link from "next/link"
+import useSWR from "swr";
 
-export function HeroSection() {
+type HeroRespone = {
+  title: string;
+  subtitle: string;
+  description: string;
+  cv: File;
+  email: string;
+  githubAccount?: string;
+  linkedinAccount?: string;
+  telegramAccount: string;
+};
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export function HeroSection({userId}:{userId:string}) {
+
+    const { data, error, isLoading } = useSWR<HeroRespone>(
+      `/api/mainheader/${userId}`,
+      fetcher
+    );
+    
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="container mx-auto px-4 text-center text-white">

@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createProject, getProjects } from "@/lib/db/queries";
+import { createProject, getProjectsByUserId } from "@/lib/db/queries";
 
-export async function GET(request: NextRequest) {
+export async function GET(req: Request,context: { params: Promise<{ id: string }> }) {
   try {
-    const { searchParams } = new URL(request.url);
-
+    const { id } = await context.params;
+    const { searchParams } = new URL(req.url);
     const published = searchParams.get("published") === "true";
     const featured = searchParams.get("featured") === "true";
 
-    const result = await getProjects({ published, featured });
+    const result = await getProjectsByUserId(id);
 
     return NextResponse.json(result);
   } catch (error) {

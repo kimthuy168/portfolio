@@ -9,7 +9,7 @@ import useSWR from "swr"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export function ExperienceSection() {
+export function ExperienceSection({userId}:{userId:string}) {
   const { data: experiences, isLoading} = useSWR<Experience[]>('/api/experiences?published=true', fetcher);
 
 

@@ -2,31 +2,50 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
 
 import { Bell, LogOut, Settings, User2Icon } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "../ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { User } from "@/lib/db/schema"
+import useSWR from "swr"
 
-interface AdminHeaderProps {
-  user: User | null;
+type ProfileData = {
+  id: string
+  email: string
+  name: string
+  role: string
+  provider: string
+  createdAt: string
+  socialAccount?: {
+    githubAccount?: string
+    linkedinAccount?: string
+    telegramAccount?: string
+  }
 }
 
-export function AdminHeader({ user }: AdminHeaderProps) {
-  const [notifications] = useState(3) // Mock notification count
-  const router = useRouter()
-  const { toast } = useToast()
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+export function AdminHeader({ userId }: {userId?: string}) {
+  const [notifications] = useState(3) // Mock notification count
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const { data, error, isLoading } = useSWR<ProfileData>(
+    `/api/profile/${userId}`,
+    fetcher
+    );
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" })
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out",
-      })
-      router.push("/admin/login")
+      await signOut({ redirectTo: "/" })
     } catch (error) {
       toast({
         title: "Error",
@@ -45,7 +64,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className=" shadow-sm border-b border-gray-200 relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between items-center">
           <div className="flex items-center">
@@ -55,7 +74,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
           <div className="flex items-center gap-x-4">
             {/* Notifications */}
             <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-5 w-5" />
+              <Bell className="size-5" />
               {notifications > 0 && (
                 <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                   {notifications}
@@ -64,28 +83,30 @@ export function AdminHeader({ user }: AdminHeaderProps) {
             </Button>
 
             {/* User Menu */}
+          
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt={user?.name} />
-                    <AvatarFallback>{getInitials(user?.name!)}</AvatarFallback>
+                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt={data?.name} />
+                    <AvatarFallback>{getInitials(data?.name || "U")}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+
+              <DropdownMenuContent className="border  bg-white z-[9999] ">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                    <p className="text-sm font-medium leading-none">{data?.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{data?.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/admin/profile")}>
+                <DropdownMenuItem onClick={() => router.push(`/dashboard/profile/${userId}`)}>
                   <User2Icon className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/admin/settings")}>
+                <DropdownMenuItem onClick={() => router.push(`/dashboard/settings/${userId}`)}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
@@ -96,6 +117,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
           </div>
         </div>
       </div>

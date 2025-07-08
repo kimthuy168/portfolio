@@ -16,7 +16,7 @@ const categoryIcons = {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export function SkillsSection() {
+export function SkillsSection({userId}:{userId:string}) {
   const { data: skills, isLoading} = useSWR<Skill[]>('/api/skills?published=true', fetcher);
  
 

@@ -1,0 +1,10 @@
+export { HeroManager } from "./hero-form"
+export { MainHeaderManager } from "./main-header-form"
+export { MainFooterManager } from "./main-footer-form"
+export { SocialAccountManager } from "./social-account-form"
+export { SkillsManager } from "./skills-manager"
+export { ExperienceManager } from "./experience-manager"
+export { ContactManager } from "./contact-manager"
+export { ProjectsManager } from "./projects-manager"
+export { ProfileAccount } from "./profile-account"
+

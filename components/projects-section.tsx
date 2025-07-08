@@ -12,7 +12,7 @@ import useSWR from "swr"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export function ProjectsSection() {
+export function ProjectsSection({userId}:{userId:string}) {
    const { data: projects, isLoading} = useSWR<Project[]>('/api/projects?published=true&featured=true', fetcher);
 
 

@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,7 +11,7 @@ import { Mail, Eye, Trash2, Calendar, User, MessageSquare } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import type { Contact } from "@/lib/db/schema"
 
-export function ContactManager() {
+export function ContactManager({ userId }: { userId: string }) {
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
@@ -21,11 +20,11 @@ export function ContactManager() {
 
   useEffect(() => {
     fetchContacts()
-  }, [])
+  }, [userId])
 
   const fetchContacts = async () => {
     try {
-      const response = await fetch("/api/contact")
+      const response = await fetch(`/api/contact/${userId}`)
       if (!response.ok) throw new Error("Failed to fetch contacts")
       const data = await response.json()
       setContacts(data)
@@ -44,22 +43,14 @@ export function ContactManager() {
     try {
       const response = await fetch(`/api/contact/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ read: true }),
       })
-
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Message marked as read",
-        })
+        toast({ title: "Success", description: "Message marked as read" })
         fetchContacts()
-      } else {
-        throw new Error("Failed to mark as read")
-      }
-    } catch (error) {
+      } else throw new Error("Failed to mark as read")
+    } catch {
       toast({
         title: "Error",
         description: "Failed to mark message as read",
@@ -70,22 +61,13 @@ export function ContactManager() {
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this message?")) return
-
     try {
-      const response = await fetch(`/api/contact/${id}`, {
-        method: "DELETE",
-      })
-
+      const response = await fetch(`/api/contact/${id}`, { method: "DELETE" })
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Message deleted successfully",
-        })
+        toast({ title: "Success", description: "Message deleted successfully" })
         fetchContacts()
-      } else {
-        throw new Error("Failed to delete message")
-      }
-    } catch (error) {
+      } else throw new Error("Failed to delete message")
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete message",
@@ -97,27 +79,22 @@ export function ContactManager() {
   const handleViewMessage = (contact: Contact) => {
     setSelectedContact(contact)
     setIsDialogOpen(true)
-    if (!contact.read) {
-      handleMarkAsRead(contact.id)
-    }
+    if (!contact.read) handleMarkAsRead(contact.id)
   }
 
-  const formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
+  const formatDate = (date: string | Date) =>
+    new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     })
-  }
 
-  const unreadMessages = contacts.filter((contact) => !contact.read)
-  const readMessages = contacts.filter((contact) => contact.read)
+  const unreadMessages = contacts.filter((c) => !c.read)
+  const readMessages = contacts.filter((c) => c.read)
 
-  if (loading) {
-    return <div>Loading contact messages...</div>
-  }
+  if (loading) return <div>Loading contact messages...</div>
 
   return (
     <div className="space-y-6">
@@ -154,66 +131,37 @@ export function ContactManager() {
 
         <TabsContent value="unread" className="space-y-4">
           {unreadMessages.length === 0 ? (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <Mail className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-500">No unread messages</p>
-                </div>
-              </CardContent>
-            </Card>
+            <EmptyCard icon={<Mail className="h-12 w-12 mx-auto text-gray-400 mb-4" />} text="No unread messages" />
           ) : (
-            <div className="grid gap-4">
-              {unreadMessages.map((contact) => (
-                <ContactCard
-                  key={contact.id}
-                  contact={contact}
-                  onView={handleViewMessage}
-                  onDelete={handleDelete}
-                  formatDate={formatDate}
-                />
-              ))}
-            </div>
+            <ContactList
+              contacts={unreadMessages}
+              onView={handleViewMessage}
+              onDelete={handleDelete}
+              formatDate={formatDate}
+            />
           )}
         </TabsContent>
 
         <TabsContent value="read" className="space-y-4">
           {readMessages.length === 0 ? (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <Eye className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-500">No read messages</p>
-                </div>
-              </CardContent>
-            </Card>
+            <EmptyCard icon={<Eye className="h-12 w-12 mx-auto text-gray-400 mb-4" />} text="No read messages" />
           ) : (
-            <div className="grid gap-4">
-              {readMessages.map((contact) => (
-                <ContactCard
-                  key={contact.id}
-                  contact={contact}
-                  onView={handleViewMessage}
-                  onDelete={handleDelete}
-                  formatDate={formatDate}
-                />
-              ))}
-            </div>
+            <ContactList
+              contacts={readMessages}
+              onView={handleViewMessage}
+              onDelete={handleDelete}
+              formatDate={formatDate}
+            />
           )}
         </TabsContent>
 
         <TabsContent value="all" className="space-y-4">
-          <div className="grid gap-4">
-            {contacts.map((contact) => (
-              <ContactCard
-                key={contact.id}
-                contact={contact}
-                onView={handleViewMessage}
-                onDelete={handleDelete}
-                formatDate={formatDate}
-              />
-            ))}
-          </div>
+          <ContactList
+            contacts={contacts}
+            onView={handleViewMessage}
+            onDelete={handleDelete}
+            formatDate={formatDate}
+          />
         </TabsContent>
       </Tabs>
 
@@ -229,44 +177,36 @@ export function ContactManager() {
             </DialogDescription>
           </DialogHeader>
           {selectedContact && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-500">Name</Label>
-                  <p className="text-sm">{selectedContact.name}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-500">Email</Label>
-                  <p className="text-sm">{selectedContact.email}</p>
-                </div>
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-500">Subject</Label>
-                <p className="text-sm">{selectedContact.subject}</p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-500">Message</Label>
-                <div className="mt-2 p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm whitespace-pre-wrap">{selectedContact.message}</p>
-                </div>
-              </div>
-              <div className="flex justify-between items-center pt-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={() => window.open(`mailto:${selectedContact.email}?subject=Re: ${selectedContact.subject}`)}
-                >
-                  <Mail className="mr-2 h-4 w-4" />
-                  Reply via Email
-                </Button>
-                <Button variant="outline" onClick={() => handleDelete(selectedContact.id)}>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Message
-                </Button>
-              </div>
-            </div>
+            <ContactDetails
+              contact={selectedContact}
+              onDelete={handleDelete}
+            />
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+interface ContactListProps {
+  contacts: Contact[]
+  onView: (contact: Contact) => void
+  onDelete: (id: number) => void
+  formatDate: (date: string | Date) => string
+}
+
+function ContactList({ contacts, onView, onDelete, formatDate }: ContactListProps) {
+  return (
+    <div className="grid gap-4">
+      {contacts.map((contact) => (
+        <ContactCard
+          key={contact.id}
+          contact={contact}
+          onView={onView}
+          onDelete={onDelete}
+          formatDate={formatDate}
+        />
+      ))}
     </div>
   )
 }
@@ -315,6 +255,59 @@ function ContactCard({ contact, onView, onDelete, formatDate }: ContactCardProps
             <Calendar className="mr-1 h-3 w-3" />
             {formatDate(contact.createdAt!)}
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ContactDetails({ contact, onDelete }: { contact: Contact; onDelete: (id: number) => void }) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-sm font-medium text-gray-500">Name</Label>
+          <p className="text-sm">{contact.name}</p>
+        </div>
+        <div>
+          <Label className="text-sm font-medium text-gray-500">Email</Label>
+          <p className="text-sm">{contact.email}</p>
+        </div>
+      </div>
+      <div>
+        <Label className="text-sm font-medium text-gray-500">Subject</Label>
+        <p className="text-sm">{contact.subject}</p>
+      </div>
+      <div>
+        <Label className="text-sm font-medium text-gray-500">Message</Label>
+        <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+          <p className="text-sm whitespace-pre-wrap">{contact.message}</p>
+        </div>
+      </div>
+      <div className="flex justify-between items-center pt-4 border-t">
+        <Button
+          variant="outline"
+          onClick={() => window.open(`mailto:${contact.email}?subject=Re: ${contact.subject}`)}
+        >
+          <Mail className="mr-2 h-4 w-4" />
+          Reply via Email
+        </Button>
+        <Button variant="outline" onClick={() => onDelete(contact.id)}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete Message
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function EmptyCard({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <Card>
+      <CardContent className="flex items-center justify-center py-12">
+        <div className="text-center">
+          {icon}
+          <p className="text-gray-500">{text}</p>
         </div>
       </CardContent>
     </Card>

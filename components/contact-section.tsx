@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-export function ContactSection() {
+export function ContactSection({userId}:{userId:string}) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",

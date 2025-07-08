@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx"
+import { Cloud, Code, Database, Server } from "lucide-react"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -32,3 +33,11 @@ export function truncate(text: string, length: number): string {
   if (text.length <= length) return text
   return text.slice(0, length) + "..."
 }
+
+export const CategoriesJob = [
+  { value: "Frontend", label: "Frontend", icon: Code },
+  { value: "Backend", label: "Backend", icon: Server },
+  { value: "Database", label: "Database", icon: Database },
+  { value: "Cloud", label: "Cloud", icon: Cloud },
+  { value: "DevOps", label: "DevOps", icon: Cloud },
+]

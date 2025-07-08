@@ -2,8 +2,27 @@
 
 import Link from "next/link"
 import { Github, Linkedin, Mail, Heart } from "lucide-react"
+import useSWR from "swr";
+import { TelegramIcon } from "./ui/icons";
 
-export function MainFooter() {
+type MainFooterRespone = {
+  descriptionMyself: string;
+  userName: string;
+  email: string;
+  phone?: number;
+  githubAccount?: string;
+  linkedinAccount?: string;
+  telegramAccount: string;
+  adress: string;
+};
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export function MainFooter({userId}:{userId:string}) {
+   const { data, error, isLoading } = useSWR<MainFooterRespone>(
+      `/api/mainfooter/${userId}`,
+      fetcher
+    );
   const currentYear = new Date().getFullYear()
 
   return (
@@ -12,33 +31,47 @@ export function MainFooter() {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-2">
-            <h3 className="text-2xl font-bold mb-4">John Doe</h3>
+            <h3 className="text-2xl font-bold mb-4">{data?.userName}</h3>
             <p className="text-gray-400 mb-6 max-w-md">
-              Full-stack developer passionate about creating modern, scalable web applications that solve real-world
-              problems and deliver exceptional user experiences.
+              {data?.descriptionMyself ?? 
+              "Full-stack developer passionate about creating modern, scalable web applications that solve real-world.problems and deliver exceptional user experiences"}
             </p>
             <div className="flex space-x-4">
-              <Link
-                href="https://github.com"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="GitHub"
-              >
-                <Github className="h-6 w-6" />
-              </Link>
-              <Link
-                href="https://linkedin.com"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="h-6 w-6" />
-              </Link>
-              <Link
-                href="mailto:contact@example.com"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Email"
-              >
-                <Mail className="h-6 w-6" />
-              </Link>
+            {/* GitHub*/}
+            {data?.githubAccount &&  
+            <Link
+              href={data?.githubAccount!}
+              className="text-gray-700"
+            >
+              <Github className="h-5 w-5" />
+            </Link>
+            }
+          {/* Linkedin*/}
+           {data?.linkedinAccount && 
+           <Link
+              href={data?.linkedinAccount}
+              className= "text-gray-700"
+            >
+              <Linkedin className="h-5 w-5" />
+            </Link>}
+
+            {/* Email */}
+            {data?.email && 
+            <Link
+              href={data.email}
+              className="text-gray-700"
+            >
+              <Mail className="h-5 w-5" />
+            </Link>}
+            
+             {/* Telegram */}
+            {data?.telegramAccount &&  
+            <Link
+              href={data.email}
+              className="text-gray-700"
+            >
+              <TelegramIcon size={5} />
+            </Link>}
             </div>
           </div>
 
@@ -85,18 +118,15 @@ export function MainFooter() {
           <div>
             <h4 className="text-lg font-semibold mb-4">Get In Touch</h4>
             <div className="space-y-2 text-gray-400">
-              <p>San Francisco, CA</p>
-              <p>contact@example.com</p>
-              <p>+1 (555) 123-4567</p>
+              <p>{data?.adress ?? 'San Francisco, CA'}</p>
+              <p>{data?.email ?? 'contact@example.com'}</p>
+              <p>{data?.phone ?? +855-123-123-12}</p>
             </div>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">© {currentYear} John Doe. All rights reserved.</p>
-          <p className="text-gray-400 text-sm flex items-center mt-4 md:mt-0">
-            Made with <Heart className="h-4 w-4 mx-1 text-red-500" /> using Next.js
-          </p>
+          <p className="text-gray-400 text-sm">© {currentYear} {data?.userName }. All rights reserved.</p>
         </div>
       </div>
     </footer>

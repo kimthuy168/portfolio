@@ -30,28 +30,29 @@ export function RegisterForm() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
+  setLoading(true)
 
-    const result = await registerAction(formData)
+  const result = await registerAction(formData)
 
-    if (result.error) {
-      toast({
-        title: "Registration failed",
-        description: result.error,
-        variant: "destructive",
-      })
-    } else {
-      toast({
-        title: "Registration successful",
-        description: "You can now log in.",
-      })
-      router.push("/admin/dashboard") // or redirect to dashboard
-    }
-
-    setLoading(false)
+  if (result.error) {
+    toast({
+      title: "Registration failed",
+      description: result.error,
+      variant: "destructive",
+    })
+  } else {
+    toast({
+      title: "Registration successful",
+      description: "Redirecting to your dashboard...",
+    })
+    router.push(`/dashboard/${result.userId}`)
   }
+
+  setLoading(false)
+}
+
 
   return (
     <Card>

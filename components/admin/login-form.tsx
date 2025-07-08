@@ -23,21 +23,25 @@ export function LoginForm() {
     password: "",
   })
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("") // 🆕 Error message state
   const router = useRouter()
   const { toast } = useToast()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    setErrorMessage("") // Clear error on input change
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
+    setErrorMessage("")
 
     const result = await loginAction(formData)
 
     if (result.error) {
+      setErrorMessage(result.error) // Show inline message
       toast({
         title: "Login failed",
         description: result.error,
@@ -49,7 +53,7 @@ export function LoginForm() {
         description: "Redirecting...",
       })
       router.refresh()
-      router.push("/admin/dashboard")
+      router.push(`/dashboard/${result.userId}`)
     }
 
     setLoading(false)
@@ -57,6 +61,9 @@ export function LoginForm() {
 
   return (
     <>
+      {errorMessage && (
+        <div className="text-sm text-red-500">{errorMessage}</div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Sign In</CardTitle>
@@ -64,6 +71,7 @@ export function LoginForm() {
             Enter your credentials to access the admin panel
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -100,7 +108,7 @@ export function LoginForm() {
       <div className="text-center mt-4 text-sm text-muted-foreground">
         Don’t have an account?{" "}
         <Link
-          href="/admin/register"
+          href="/register"
           className="text-primary hover:underline font-medium"
         >
           Sign up

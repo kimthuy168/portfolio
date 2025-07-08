@@ -1,48 +1,41 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState } from "react"
+import {
+  Card, CardContent, CardDescription, CardHeader, CardTitle
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger
 } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Edit, Trash2, Code, Server, Database, Cloud } from "lucide-react"
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select"
+import { Plus, Edit, Trash2, Code } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import type { Skill } from "@/lib/db/schema"
+import type { NewSkill, Skill } from "@/lib/db/schema"
+import { CategoriesJob } from "@/lib/utils"
 
-const skillCategories = [
-  { value: "Frontend", label: "Frontend", icon: Code },
-  { value: "Backend", label: "Backend", icon: Server },
-  { value: "Database", label: "Database", icon: Database },
-  { value: "Cloud", label: "Cloud", icon: Cloud },
-  { value: "DevOps", label: "DevOps", icon: Cloud },
-]
 
-export function SkillsManager() {
+
+export function SkillsManager({ userId }: { userId: string }) {
   const [skills, setSkills] = useState<Skill[]>([])
   const [loading, setLoading] = useState(true)
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { toast } = useToast()
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<NewSkill>({
     name: "",
     category: "",
     level: 1,
     icon: "",
     published: true,
+    userId,
   })
 
   useEffect(() => {
@@ -109,6 +102,7 @@ export function SkillsManager() {
       level: skill.level,
       icon: skill.icon || "",
       published: skill.published || true,
+      userId: skill.userId || userId, // fallback to current user
     })
     setIsDialogOpen(true)
   }
@@ -146,39 +140,33 @@ export function SkillsManager() {
       level: 1,
       icon: "",
       published: true,
+      userId,
     })
     setEditingSkill(null)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target
+    const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? Number.parseInt(value) : value,
+      [name]: name === "level" ? Number(value) : value,
     }))
   }
 
-  const groupedSkills = skills.reduce(
-    (acc, skill) => {
-      if (!acc[skill.category]) {
-        acc[skill.category] = []
-      }
-      acc[skill.category].push(skill)
-      return acc
-    },
-    {} as Record<string, Skill[]>,
-  )
+  const groupedSkills = skills.reduce((acc, skill) => {
+    if (!acc[skill.category]) acc[skill.category] = []
+    acc[skill.category].push(skill)
+    return acc
+  }, {} as Record<string, Skill[]>)
 
-  if (loading) {
-    return <div>Loading skills...</div>
-  }
+  if (loading) return <div>Loading skills...</div>
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Skills Management</h2>
-          <p className="text-gray-600">Manage your technical skills and expertise levels</p>
+          <p className="text-gray-600">Manage your technical skills</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -209,22 +197,22 @@ export function SkillsManager() {
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {skillCategories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
+                    {CategoriesJob.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="level">Skill Level (1-5)</Label>
+                <Label htmlFor="level">Skill Level (1–5)</Label>
                 <Input
                   id="level"
                   name="level"
                   type="number"
-                  min="1"
-                  max="5"
+                  min={1}
+                  max={5}
                   value={formData.level}
                   onChange={handleChange}
                   required
@@ -232,13 +220,15 @@ export function SkillsManager() {
               </div>
               <div>
                 <Label htmlFor="icon">Icon (optional)</Label>
-                <Input id="icon" name="icon" value={formData.icon} onChange={handleChange} />
+                <Input id="icon" name="icon" value={formData?.icon!} onChange={handleChange} />
               </div>
               <div className="flex items-center space-x-2">
                 <Switch
                   id="published"
-                  checked={formData.published}
-                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, published: checked }))}
+                  checked={formData?.published!}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, published: checked }))
+                  }
                 />
                 <Label htmlFor="published">Published</Label>
               </div>
@@ -255,7 +245,7 @@ export function SkillsManager() {
 
       <div className="grid gap-6">
         {Object.entries(groupedSkills).map(([category, categorySkills]) => {
-          const categoryInfo = skillCategories.find((cat) => cat.value === category)
+          const categoryInfo = CategoriesJob.find((c) => c.value === category)
           const IconComponent = categoryInfo?.icon || Code
 
           return (
@@ -266,12 +256,15 @@ export function SkillsManager() {
                   {category}
                   <Badge variant="secondary">{categorySkills.length}</Badge>
                 </CardTitle>
-                <CardDescription>Skills in the {category.toLowerCase()} category</CardDescription>
+                <CardDescription>Skills in {category}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {categorySkills.map((skill) => (
-                    <div key={skill.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={skill.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{skill.name}</span>

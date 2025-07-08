@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu, Github, Linkedin, Mail } from "lucide-react"
 import { cn } from "@/lib/utils"
+import useSWR from "swr"
+import { TelegramIcon } from "./ui/icons"
 
 const navigation = [
   { name: "Home", href: "#home" },
@@ -15,9 +17,24 @@ const navigation = [
   { name: "Contact", href: "#contact" },
 ]
 
-export function MainHeader() {
+type MainHeaderRespone = {
+  userName: string;
+  email: string;
+  githubAccount?: string;
+  linkedinAccount?: string;
+  telegramAccount: string;
+};
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export function MainHeader({userId}:{userId:string}) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("home")
+
+  const { data, error, isLoading } = useSWR<MainHeaderRespone>(
+    `/api/mainheader/${userId}`,
+    fetcher
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,7 +84,7 @@ export function MainHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="font-bold text-xl">
-            <span className={cn("transition-colors", isScrolled ? "text-gray-900" : "text-white")}>John Doe</span>
+            <span className={cn("transition-colors", isScrolled ? "text-gray-900" : "text-white")}>{data?.userName}</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -92,24 +109,42 @@ export function MainHeader() {
 
           {/* Social Links */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* GitHub*/}
+            {data?.githubAccount &&  
             <Link
-              href="https://github.com"
+              href={data?.githubAccount!}
               className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
             >
               <Github className="h-5 w-5" />
             </Link>
-            <Link
-              href="https://linkedin.com"
+            }
+          {/* Linkedin*/}
+           {data?.linkedinAccount && 
+           <Link
+              href={data?.linkedinAccount}
               className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
             >
               <Linkedin className="h-5 w-5" />
-            </Link>
+            </Link>}
+
+            {/* Email */}
+            {data?.email && 
             <Link
-              href="mailto:contact@example.com"
+              href={data.email}
               className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
             >
               <Mail className="h-5 w-5" />
-            </Link>
+            </Link>}
+            
+             {/* Telegram */}
+            {data?.telegramAccount &&  
+            <Link
+              href={data.email}
+              className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
+            >
+              <TelegramIcon size={5} />
+            </Link>}
+
           </div>
 
           {/* Mobile Menu */}
@@ -139,15 +174,44 @@ export function MainHeader() {
                   ))}
                 </nav>
                 <div className="flex space-x-4 pt-6 border-t">
-                  <Link href="https://github.com" className="text-gray-600 hover:text-blue-600">
-                    <Github className="h-6 w-6" />
+                  {/* GitHub*/}
+                  {data?.githubAccount &&  
+                  <Link
+                    href={data?.githubAccount!}
+                    className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
+                  >
+                    <Github className="h-5 w-5" />
                   </Link>
-                  <Link href="https://linkedin.com" className="text-gray-600 hover:text-blue-600">
-                    <Linkedin className="h-6 w-6" />
+                  }
+                {/* Linkedin*/}
+                {data?.linkedinAccount && 
+                <Link
+                    href={data?.linkedinAccount}
+                    className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
+                  >
+                    <Linkedin className="h-5 w-5" />
                   </Link>
-                  <Link href="mailto:contact@example.com" className="text-gray-600 hover:text-blue-600">
-                    <Mail className="h-6 w-6" />
+                  }
+
+                  {/* Email */}
+                  {data?.email && 
+                  <Link
+                    href={data.email}
+                    className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
+                  >
+                    <Mail className="h-5 w-5" />
                   </Link>
+                  }
+            
+                  {/* Telegram */}
+                  {data?.telegramAccount &&  
+                  <Link
+                    href={data.email}
+                    className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
+                  >
+                    <TelegramIcon size={5} />
+                  </Link>
+                  }
                 </div>
               </div>
             </SheetContent>

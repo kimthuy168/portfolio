@@ -1,30 +1,21 @@
 "use client"
 
 import { useState } from "react"
-import { ProjectsManager } from "./projects-manager"
-import { LogOut, BarChart3, FolderOpen, Code, Briefcase, Mail } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { LogOut, BarChart3, FolderOpen, Code, Briefcase, Mail, UserCircle, Layout, Layers2, Share2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "../ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { SkillsManager } from "./skills-manager"
-import { ExperienceManager } from "./experience-manager"
-import { ContactManager } from "./contact-manager"
+import { signOut } from "next-auth/react"
+import { ContactManager, ExperienceManager, HeroManager, MainFooterManager, MainHeaderManager, ProjectsManager, SkillsManager, SocialAccountManager } from "@/components/admin"
 
-export function AdminDashboard() {
+export function AdminDashboard({userId}:{userId?: string}) {
   const [activeTab, setActiveTab] = useState("overview")
-  const router = useRouter()
   const { toast } = useToast()
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" })
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out",
-      })
-      router.push("/admin/login")
+      await signOut({redirectTo: '/',})
     } catch (error) {
       toast({
         title: "Error",
@@ -53,7 +44,7 @@ export function AdminDashboard() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Overview
@@ -73,6 +64,22 @@ export function AdminDashboard() {
             <TabsTrigger value="contact" className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
               Contact
+            </TabsTrigger>
+            <TabsTrigger value="hero" className="flex items-center gap-2">
+              <UserCircle className="h-4 w-4" />
+              Hero Section
+            </TabsTrigger>
+            <TabsTrigger value="mainHeader" className="flex items-center gap-2">
+              <Layout className="h-4 w-4" />
+              Main Header
+            </TabsTrigger>
+            <TabsTrigger value="mainFooter" className="flex items-center gap-2">
+              <Layers2 className="h-4 w-4" />
+              Main Footer
+            </TabsTrigger>
+            <TabsTrigger value="socialAccounts" className="flex items-center gap-2">
+              <Share2 className="h-4 w-4" />
+              Social Accounts
             </TabsTrigger>
           </TabsList>
 
@@ -145,19 +152,35 @@ export function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="projects">
-            <ProjectsManager />
+            <ProjectsManager userId={userId ?? ''}/>
           </TabsContent>
 
           <TabsContent value="skills">
-            <SkillsManager />
+            <SkillsManager userId={userId ?? ''}/>
           </TabsContent>
 
           <TabsContent value="experience">
-            <ExperienceManager />
+            <ExperienceManager userId={userId ?? ''}/>
           </TabsContent>
 
           <TabsContent value="contact">
-            <ContactManager />
+            <ContactManager userId={userId ?? ''}/>
+          </TabsContent>
+
+          <TabsContent value="hero">
+            <HeroManager userId={userId ?? ""} />
+          </TabsContent>
+
+          <TabsContent value="mainHeader">
+            <MainHeaderManager userId={userId ?? ""} />
+          </TabsContent>
+
+          <TabsContent value="mainFooter">
+            <MainFooterManager userId={userId ?? ""} />
+          </TabsContent>
+
+          <TabsContent value="socialAccounts">
+            <SocialAccountManager userId={userId ?? ""} />
           </TabsContent>
         </Tabs>
       </main>

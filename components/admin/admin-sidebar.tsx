@@ -3,23 +3,29 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, FolderOpen, Code, Briefcase, Mail, Settings, Menu, X, Home, User } from "lucide-react"
+import { BarChart3, FolderOpen, Code, Briefcase, Mail, Settings, Menu, X, Home, UserCircle, Share2, Layers, Layers2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "../ui/button"
 
-const navigation = [
-  { name: "Dashboard", href: "/admin/dashboard", icon: BarChart3 },
-  { name: "Projects", href: "/admin/dashboard/projects", icon: FolderOpen },
-  { name: "Skills", href: "/admin/dashboard/skills", icon: Code },
-  { name: "Experience", href: "/admin/dashboard/experience", icon: Briefcase },
-  { name: "Messages", href: "/admin/dashboard/messages", icon: Mail },
-  { name: "Profile", href: "/admin/dashboard/profile", icon: User },
-  { name: "Settings", href: "/admin/dashboard/settings", icon: Settings },
-]
 
-export function AdminSidebar() {
+
+
+export function AdminSidebar({userId}:{userId?: string}) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
+
+  const navigation = [
+  { name: "Dashboard", href: `/dashboard/${userId}`, icon: BarChart3 },
+  { name: "Projects", href: `/dashboard/projects/${userId}` , icon: FolderOpen },
+  { name: "Skills", href: `/dashboard/skills/${userId}`, icon: Code },
+  { name: "Experience", href: `/dashboard/experience/${userId}`, icon: Briefcase },
+  { name: "Messages", href:  `/dashboard/messages/${userId}`, icon: Mail },
+  { name: "Hero", href: `/dashboard/hero/${userId}`, icon: UserCircle },
+  { name: "Main Header", href: `/dashboard/main-header/${userId}`, icon: Layers },
+  { name: "Main Footer", href: `/dashboard/main-footer/${userId}`, icon: Layers2 },
+  { name: "Social Account", href: `/dashboard/social-account/${userId}`, icon: Share2 },
+  { name: "Settings", href: `/dashboard/settings/${userId}`, icon: Settings },
+]
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
@@ -27,7 +33,7 @@ export function AdminSidebar() {
       <div className="flex h-16 shrink-0 items-center px-6 border-b border-gray-200">
         <Link href="/" className="flex items-center space-x-2">
           <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">JD</span>
+            <span className="text-white font-bold text-sm">Portfolio</span>
           </div>
           <span className="text-xl font-bold text-gray-900">Admin</span>
         </Link>
@@ -64,7 +70,7 @@ export function AdminSidebar() {
         {/* Bottom Links */}
         <div className="mt-auto space-y-2">
           <Link
-            href="/"
+            href={`/user/${userId}`}
             className="group flex gap-x-3 rounded-md p-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
           >
             <Home className="h-5 w-5 shrink-0 text-gray-400 group-hover:text-gray-500" />

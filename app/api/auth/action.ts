@@ -1,11 +1,40 @@
 'use server';
 
-
 import { createUser, getUserByEmail } from "@/lib/db/queries";
-import { hash } from "bcrypt-ts";
-import { AuthError } from "next-auth";
 import { signIn } from "./auth";
+import { hash } from "bcrypt-ts";
 
+export async function loginAction(formData: {
+  email: string;
+  password: string;
+}) {
+  const { email, password } = formData;
+
+  try {
+    const existingUser = await getUserByEmail(email);
+    if (!existingUser) {
+      return { error: "User not found. Please sign up." };
+    }
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (!result || result.error) {
+      if (result?.error === "CredentialsSignin") {
+        return { error: "Incorrect email or password." };
+      }
+      return { error: result?.error || "Login failed." };
+    }
+
+    return { success: true , userId: existingUser.id};
+  } catch (error) {
+    console.error("Unexpected login error:", error);
+    return { error: "Unexpected error during login." };
+  }
+}
 
 export async function registerAction(formData: {
   email: string;
@@ -26,30 +55,5 @@ export async function registerAction(formData: {
     return { error: "Failed to create user" };
   }
 
-  return { success: true };
-}
-
-// Login with credentials
-export async function loginAction(formData: {
-  email: string;
-  password: string;
-}) {
-  const { email, password } = formData;
-
-  try {
-    await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    return { success: true };
-  } catch (error) {
-    if (error instanceof AuthError) {
-      return { error: "Invalid credentials" };
-    }
-
-    console.error("Login failed", error);
-    return { error: "Unexpected error during login" };
-  }
+  return { success: true , userId: user.id};
 }
