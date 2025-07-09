@@ -22,19 +22,19 @@ export const users = pgTable("users", {
 
 // SOCIAL ACCOUNTS
 export const socialAccounts = pgTable("social_accounts", {
-  id: serial("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  githubAccount: text("github_account"),
-  linkedinAccount: text("linkedin_account"),
-  telegramAccount: text("telegram_account"),
+  account: text("account"),
+  accountName: text("account_name"),
+  accountType: text("account_type"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // HERO SECTIONS
 export const heroSections = pgTable("hero_sections", {
-  id: serial("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  socialAccountId: integer("social_account_id").references(() => socialAccounts.id, { onDelete: "set null" }),
+  socialAccountId: uuid("social_account_id").references(() => socialAccounts.id, { onDelete: "set null" }).array(),
 
   title: text("title").notNull(),
   subtitle: text("subtitle").notNull(),
@@ -47,25 +47,19 @@ export const heroSections = pgTable("hero_sections", {
 
 // MAIN HEADERS
 export const mainHeaders = pgTable("main_headers", {
-  id: serial("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  socialAccountId: integer("social_account_id").references(() => socialAccounts.id, { onDelete: "set null" }),
-
-  userName: text("user_name").notNull(),
-  email: text("email").notNull(),
+  socialAccountId: uuid("social_account_id").references(() => socialAccounts.id, { onDelete: "set null" }).array(),
   published: boolean("published").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // MAIN FOOTERS
 export const mainFooters = pgTable("main_footers", {
-  id: serial("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  socialAccountId: integer("social_account_id").references(() => socialAccounts.id, { onDelete: "set null" }),
-
-  userName: text("user_name").notNull(),
+  socialAccountId: uuid("social_account_id").references(() => socialAccounts.id, { onDelete: "set null" }).array(),
   descriptionMyself: text("description_myself").notNull(),
-  email: text("email").notNull(),
   phone: integer("phone"),
   adress: text("adress").notNull(),
   published: boolean("published").default(true),

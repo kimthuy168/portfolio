@@ -32,7 +32,7 @@ export function AdminSidebar({userId}:{userId?: string}) {
       {/* Logo */}
       <div className="flex h-16 shrink-0 items-center px-6 border-b border-gray-200">
         <Link href="/" className="flex items-center space-x-2">
-          <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="bg-blue-600 rounded-lg flex items-center justify-center p-3">
             <span className="text-white font-bold text-sm">Portfolio</span>
           </div>
           <span className="text-xl font-bold text-gray-900">Admin</span>

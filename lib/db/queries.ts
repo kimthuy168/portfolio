@@ -74,18 +74,18 @@ export async function getUserById(userId: string) {
 // --- SOCIAL ACCOUNTS ---
 
 export async function createSocialAccount(data: {
+  accountName: string;
+  accountType: string;
   userId: string;
-  githubAccount?: string;
-  linkedinAccount?: string;
-  telegramAccount?: string;
+  account?: string;
 }) {
   const [social] = await db
     .insert(socialAccounts)
     .values({
       userId: data.userId,
-      githubAccount: data.githubAccount ?? null,
-      linkedinAccount: data.linkedinAccount ?? null,
-      telegramAccount: data.telegramAccount ?? null,
+      account: data.account ?? null,
+      accountName: data.accountName,
+      accountType: data.accountType,
       createdAt: new Date(),
     })
     .returning();
@@ -94,21 +94,17 @@ export async function createSocialAccount(data: {
 }
 
 export async function getSocialAccountByUserId(userId: string) {
-  const result = await db.select().from(socialAccounts).where(eq(socialAccounts.userId, userId)).limit(1);
-  return result[0] || null;
+  const result = await db.select().from(socialAccounts).where(eq(socialAccounts.userId, userId));
+  return result;
 }
 
-export async function updateSocialAccount(id: number, data: {
-  githubAccount?: string;
-  linkedinAccount?: string;
-  telegramAccount?: string;
+export async function updateSocialAccount(id: string, data: {
+  account?: string;
 }) {
   const [updated] = await db
     .update(socialAccounts)
     .set({
-      githubAccount: data.githubAccount ?? null,
-      linkedinAccount: data.linkedinAccount ?? null,
-      telegramAccount: data.telegramAccount ?? null,
+      account: data.account ?? null,
     })
     .where(eq(socialAccounts.id, id))
     .returning();
@@ -370,7 +366,7 @@ export async function deleteContact(id: number) {
 
 export async function createHeroSection(data: {
   userId: string;
-  socialAccountId?: number;
+  socialAccountId?: string[];
   title: string;
   subtitle: string;
   description: string;
@@ -404,18 +400,14 @@ export async function getHeroSectionsByUserId(userId: string) {
 
 export async function createMainHeader(data: {
   userId: string;
-  socialAccountId?: number;
-  userName: string;
-  email: string;
+  socialAccountId?: string[];
   published?: boolean;
 }) {
   const [header] = await db
     .insert(mainHeaders)
     .values({
       userId: data.userId,
-      socialAccountId: data.socialAccountId ?? null,
-      userName: data.userName,
-      email: data.email,
+      socialAccountId: data.socialAccountId ?? [],
       published: data.published ?? true,
       createdAt: new Date(),
     })
@@ -425,17 +417,54 @@ export async function createMainHeader(data: {
 }
 
 export async function getMainHeadersByUserId(userId: string) {
-  return await db.select().from(mainHeaders).where(eq(mainHeaders.userId, userId));
+  // 1. Get headers with user info
+  const headers = await db
+    .select({
+      id: mainHeaders.id,
+      userId: mainHeaders.userId,
+      createdAt: mainHeaders.createdAt,
+      socialAccountId: mainHeaders.socialAccountId, // integer[]
+      userName: users.name,
+      userEmail: users.email,
+    })
+    .from(mainHeaders)
+    .leftJoin(users, eq(mainHeaders.userId, users.id))
+    .where(eq(mainHeaders.userId, userId));
+
+  // 2. Extract unique social account IDs as numbers
+  const allAccountIds = [
+    ...new Set(headers.flatMap(header => header.socialAccountId ?? [])),
+  ];
+
+  console.log("allAccountIds:", allAccountIds);
+
+  // 3. Query social accounts with those IDs
+  const accounts = allAccountIds.length > 0
+    ? await db
+        .select()
+        .from(socialAccounts)
+        .where(inArray(socialAccounts.id, allAccountIds))
+    : [];
+
+  console.log("fetched accounts:", accounts);
+
+  // 4. Merge accounts into headers
+  const result = headers.map(header => ({
+    ...header,
+    socialAccounts: accounts.filter(acc =>
+      (header.socialAccountId ?? []).includes(acc.id)
+    ),
+  }));
+
+  return result;
 }
 
 // --- MAIN FOOTERS ---
 
 export async function createMainFooter(data: {
   userId: string;
-  socialAccountId?: number;
-  userName: string;
+  socialAccountId?: string[];
   descriptionMyself: string;
-  email: string;
   phone?: number;
   adress: string;
   published?: boolean;
@@ -445,9 +474,7 @@ export async function createMainFooter(data: {
     .values({
       userId: data.userId,
       socialAccountId: data.socialAccountId ?? null,
-      userName: data.userName,
       descriptionMyself: data.descriptionMyself,
-      email: data.email,
       phone: data.phone ?? null,
       adress: data.adress,
       published: data.published ?? true,
@@ -459,37 +486,65 @@ export async function createMainFooter(data: {
 }
 
 export async function getMainFootersByUserId(userId: string) {
-  return await db.select().from(mainFooters).where(eq(mainFooters.userId, userId));
+  // 1. Get headers with user info
+  const footers = await db
+    .select({
+      id: mainFooters.id,
+      userId: mainFooters.userId,
+      createdAt: mainFooters.createdAt,
+      socialAccountId: mainFooters.socialAccountId, // integer[]
+      descriptionMyself: mainFooters.descriptionMyself,
+      phone: mainFooters.phone,
+      adress: mainFooters.adress,
+      userName: users.name,
+      userEmail: users.email,
+    })
+    .from(mainFooters)
+    .leftJoin(users, eq(mainFooters.userId, users.id))
+    .where(eq(mainFooters.userId, userId));
+
+  // 2. Extract unique social account IDs as numbers
+  const allAccountIds = [
+    ...new Set(footers.flatMap(footer => footer.socialAccountId ?? [])),
+  ];
+
+  // 3. Query social accounts with those IDs
+  const accounts = allAccountIds.length > 0
+    ? await db
+        .select()
+        .from(socialAccounts)
+        .where(inArray(socialAccounts.id, allAccountIds))
+    : [];
+
+  // 4. Merge accounts into headers
+  const result = footers.map(footer => ({
+    ...footer,
+    socialAccounts: accounts.filter(acc =>
+      (footer.socialAccountId ?? []).includes(acc.id)
+    ),
+  }));
+
+  return result;
 }
 
 export async function getUserWithSocialByUserId(id: string) {
-  const result = await db
-    .select({
-      id: users.id,
-      email: users.email,
-      name: users.name,
-      role: users.role,
-      provider: users.provider,
-      createdAt: users.createdAt,
-      githubAccount: socialAccounts.githubAccount,
-      linkedinAccount: socialAccounts.linkedinAccount,
-      telegramAccount: socialAccounts.telegramAccount,
-    })
+  const userResult = await db
+    .select()
     .from(users)
-    .leftJoin(socialAccounts, eq(users.id, socialAccounts.userId))
     .where(eq(users.id, id))
     .limit(1)
 
-  const user = result[0]
+  const socialAccountsResult = await db
+    .select()
+    .from(socialAccounts)
+    .where(eq(socialAccounts.userId, id))
+
+  const user = userResult[0]
 
   if (!user) return null
 
   return {
     ...user,
-    socialAccount: {
-      githubAccount: user.githubAccount,
-      linkedinAccount: user.linkedinAccount,
-      telegramAccount: user.telegramAccount,
-    },
+    socialAccounts: socialAccountsResult,
   }
 }

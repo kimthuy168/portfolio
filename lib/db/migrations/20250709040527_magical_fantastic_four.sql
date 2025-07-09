@@ -23,9 +23,9 @@ CREATE TABLE "experiences" (
 );
 --> statement-breakpoint
 CREATE TABLE "hero_sections" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
-	"social_account_id" integer,
+	"social_account_id" uuid[],
 	"title" text NOT NULL,
 	"subtitle" text NOT NULL,
 	"description" text NOT NULL,
@@ -36,12 +36,10 @@ CREATE TABLE "hero_sections" (
 );
 --> statement-breakpoint
 CREATE TABLE "main_footers" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
-	"social_account_id" integer,
-	"user_name" text NOT NULL,
+	"social_account_id" uuid[],
 	"description_myself" text NOT NULL,
-	"email" text NOT NULL,
 	"phone" integer,
 	"adress" text NOT NULL,
 	"published" boolean DEFAULT true,
@@ -49,11 +47,9 @@ CREATE TABLE "main_footers" (
 );
 --> statement-breakpoint
 CREATE TABLE "main_headers" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
-	"social_account_id" integer,
-	"user_name" text NOT NULL,
-	"email" text NOT NULL,
+	"social_account_id" uuid[],
 	"published" boolean DEFAULT true,
 	"created_at" timestamp DEFAULT now()
 );
@@ -86,11 +82,11 @@ CREATE TABLE "skills" (
 );
 --> statement-breakpoint
 CREATE TABLE "social_accounts" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
-	"github_account" text,
-	"linkedin_account" text,
-	"telegram_account" text,
+	"account" text,
+	"account_name" text,
+	"account_type" text,
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
@@ -108,11 +104,8 @@ CREATE TABLE "users" (
 ALTER TABLE "contact" ADD CONSTRAINT "contact_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "experiences" ADD CONSTRAINT "experiences_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "hero_sections" ADD CONSTRAINT "hero_sections_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "hero_sections" ADD CONSTRAINT "hero_sections_social_account_id_social_accounts_id_fk" FOREIGN KEY ("social_account_id") REFERENCES "public"."social_accounts"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "main_footers" ADD CONSTRAINT "main_footers_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "main_footers" ADD CONSTRAINT "main_footers_social_account_id_social_accounts_id_fk" FOREIGN KEY ("social_account_id") REFERENCES "public"."social_accounts"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "main_headers" ADD CONSTRAINT "main_headers_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "main_headers" ADD CONSTRAINT "main_headers_social_account_id_social_accounts_id_fk" FOREIGN KEY ("social_account_id") REFERENCES "public"."social_accounts"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "projects" ADD CONSTRAINT "projects_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "skills" ADD CONSTRAINT "skills_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "social_accounts" ADD CONSTRAINT "social_accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;

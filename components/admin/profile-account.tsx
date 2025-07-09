@@ -11,6 +11,7 @@ import {
   Send,
   User2,
 } from "lucide-react"
+import { SocialAccount } from "@/lib/db/schema"
 
 type ProfileData = {
   id: string
@@ -19,11 +20,7 @@ type ProfileData = {
   role: string
   provider: string
   createdAt: string
-  socialAccount?: {
-    githubAccount?: string
-    linkedinAccount?: string
-    telegramAccount?: string
-  }
+  socialAccount?: SocialAccount[];
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -72,44 +69,48 @@ export function ProfileAccount({ userId }: { userId: string }) {
           <CalendarDays className="size-4 text-purple-400" />
           Joined: {new Date(data.createdAt).toLocaleDateString()}
         </p>
-
-        {data.socialAccount && (
+        {data?.socialAccount!.length > 0 && (
           <div className="flex flex-wrap items-center gap-4 pt-2">
-            {data.socialAccount.githubAccount && (
-              <a
-                href={`https://github.com/${data.socialAccount.githubAccount}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-700 dark:text-gray-200 hover:text-primary transition"
-              >
-                <Github className="h-4 w-4 text-primary" />
-                {data.socialAccount.githubAccount}
-              </a>
-            )}
-            {data.socialAccount.linkedinAccount && (
-              <a
-                href={`https://linkedin.com/in/${data.socialAccount.linkedinAccount}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-700 dark:text-gray-200 hover:text-sky-500 transition"
-              >
-                <Linkedin className="h-4 w-4" />
-                {data.socialAccount.linkedinAccount}
-              </a>
-            )}
-            {data.socialAccount.telegramAccount && (
-              <a
-                href={`https://t.me/${data.socialAccount.telegramAccount}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-700 dark:text-gray-200 hover:text-blue-500 transition"
-              >
-                <Send className="h-4 w-4" />
-                {data.socialAccount.telegramAccount}
-              </a>
-            )}
+            {data?.socialAccount!.map((acc, index) => (
+              <div key={index} className="flex flex-col space-y-1">
+                {acc.account && (
+                  <a
+                    href={acc.account}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-gray-700 dark:text-gray-200 hover:text-primary transition"
+                  >
+                    <Github className="h-4 w-4 text-primary" />
+                    {acc.account}
+                  </a>
+                )}
+                {acc.account && (
+                  <a
+                    href={acc.account}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-gray-700 dark:text-gray-200 hover:text-sky-500 transition"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                    {acc.account}
+                  </a>
+                )}
+                {acc.account && (
+                  <a
+                    href={`https://t.me/${acc.account}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-gray-700 dark:text-gray-200 hover:text-blue-500 transition"
+                  >
+                    <Send className="h-4 w-4" />
+                    {acc.account}
+                  </a>
+                )}
+              </div>
+            ))}
           </div>
         )}
+
       </div>
     </div>
   )

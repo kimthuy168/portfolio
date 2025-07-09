@@ -6,21 +6,27 @@ import useSWR from "swr";
 import { TelegramIcon } from "./ui/icons";
 
 type MainFooterRespone = {
-  descriptionMyself: string;
+  id: string;
+  socialAccountId: string[];
+  userId: string;
+  descriptionMyself: string | null;
+  phone: string | null;
+  adress: string | null;
+  createdAt: string;
+
   userName: string;
-  email: string;
-  phone?: number;
-  githubAccount?: string;
-  linkedinAccount?: string;
-  telegramAccount: string;
-  adress: string;
+  userEmail: string;
+
+  account: string | null;
+  accountName: string | null;
+  accountType: string | null;
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function MainFooter({userId}:{userId:string}) {
    const { data, error, isLoading } = useSWR<MainFooterRespone>(
-      `/api/mainfooter/${userId}`,
+      `/api/main-footer/${userId}`,
       fetcher
     );
   const currentYear = new Date().getFullYear()
@@ -38,36 +44,36 @@ export function MainFooter({userId}:{userId:string}) {
             </p>
             <div className="flex space-x-4">
             {/* GitHub*/}
-            {data?.githubAccount &&  
+            {data?.accountType === 'github' &&  
             <Link
-              href={data?.githubAccount!}
+              href={data?.account!}
               className="text-gray-700"
             >
               <Github className="h-5 w-5" />
             </Link>
             }
           {/* Linkedin*/}
-           {data?.linkedinAccount && 
+           {data?.accountType === 'linkin' && 
            <Link
-              href={data?.linkedinAccount}
+              href={data?.account!}
               className= "text-gray-700"
             >
               <Linkedin className="h-5 w-5" />
             </Link>}
 
             {/* Email */}
-            {data?.email && 
+            {data?.userEmail && 
             <Link
-              href={data.email}
+              href={data.userEmail}
               className="text-gray-700"
             >
               <Mail className="h-5 w-5" />
             </Link>}
             
              {/* Telegram */}
-            {data?.telegramAccount &&  
+            {data?.accountType === 'telegram' &&  
             <Link
-              href={data.email}
+              href={data.account!}
               className="text-gray-700"
             >
               <TelegramIcon size={5} />
@@ -119,7 +125,7 @@ export function MainFooter({userId}:{userId:string}) {
             <h4 className="text-lg font-semibold mb-4">Get In Touch</h4>
             <div className="space-y-2 text-gray-400">
               <p>{data?.adress ?? 'San Francisco, CA'}</p>
-              <p>{data?.email ?? 'contact@example.com'}</p>
+              <p>{data?.userEmail ?? 'contact@example.com'}</p>
               <p>{data?.phone ?? +855-123-123-12}</p>
             </div>
           </div>

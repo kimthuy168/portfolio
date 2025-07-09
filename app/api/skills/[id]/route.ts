@@ -1,5 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateSkill, deleteSkill } from "@/lib/db/queries"
+import { updateSkill, deleteSkill, getSkillsByUserId } from "@/lib/db/queries"
+
+export async function GET(req: Request,context: { params: Promise<{ id: string }>}) {
+  try {
+    const { id } = await context.params;
+    if (!id) {
+        return new Response('id is required', { status: 400 });
+    }
+    const result = await getSkillsByUserId(id);
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error("Error fetching contact messages:", error)
+    return NextResponse.json({ error: "Failed to fetch contact messages" }, { status: 500 })
+  }
+}
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {

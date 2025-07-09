@@ -17,13 +17,19 @@ const navigation = [
   { name: "Contact", href: "#contact" },
 ]
 
-type MainHeaderRespone = {
+type MainHeaderResponse = {
+  id: string;
+  userId: string;
+  createdAt: string; 
+  socialAccountId: string[];
   userName: string;
-  email: string;
-  githubAccount?: string;
-  linkedinAccount?: string;
-  telegramAccount: string;
+  userEmail: string;
+
+  account?: string | null;
+  accountName?: string | null;
+  accountType?: string | null;
 };
+
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -31,8 +37,8 @@ export function MainHeader({userId}:{userId:string}) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("home")
 
-  const { data, error, isLoading } = useSWR<MainHeaderRespone>(
-    `/api/mainheader/${userId}`,
+  const { data, error, isLoading } = useSWR<MainHeaderResponse>(
+    `/api/main-header/${userId}`,
     fetcher
   );
 
@@ -110,36 +116,36 @@ export function MainHeader({userId}:{userId:string}) {
           {/* Social Links */}
           <div className="hidden md:flex items-center space-x-4">
             {/* GitHub*/}
-            {data?.githubAccount &&  
+            {data?.accountType === 'github' &&  
             <Link
-              href={data?.githubAccount!}
+              href={data?.account!}
               className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
             >
               <Github className="h-5 w-5" />
             </Link>
             }
           {/* Linkedin*/}
-           {data?.linkedinAccount && 
+           {data?.accountType === 'linkin' && 
            <Link
-              href={data?.linkedinAccount}
+              href={data?.account!}
               className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
             >
               <Linkedin className="h-5 w-5" />
             </Link>}
 
             {/* Email */}
-            {data?.email && 
+            {data?.userEmail && 
             <Link
-              href={data.email}
+              href={data.userEmail}
               className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
             >
               <Mail className="h-5 w-5" />
             </Link>}
             
              {/* Telegram */}
-            {data?.telegramAccount &&  
+            {data?.accountType === 'telegram' &&  
             <Link
-              href={data.email}
+              href={data.account!}
               className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
             >
               <TelegramIcon size={5} />
@@ -175,18 +181,18 @@ export function MainHeader({userId}:{userId:string}) {
                 </nav>
                 <div className="flex space-x-4 pt-6 border-t">
                   {/* GitHub*/}
-                  {data?.githubAccount &&  
+                  {data?.accountType === 'github' &&  
                   <Link
-                    href={data?.githubAccount!}
+                    href={data?.account!}
                     className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
                   >
                     <Github className="h-5 w-5" />
                   </Link>
                   }
                 {/* Linkedin*/}
-                {data?.linkedinAccount && 
+                {data?.accountType === 'linkin' && 
                 <Link
-                    href={data?.linkedinAccount}
+                    href={data?.account!}
                     className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
                   >
                     <Linkedin className="h-5 w-5" />
@@ -194,9 +200,9 @@ export function MainHeader({userId}:{userId:string}) {
                   }
 
                   {/* Email */}
-                  {data?.email && 
+                  {data?.userEmail && 
                   <Link
-                    href={data.email}
+                    href={data.userEmail}
                     className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
                   >
                     <Mail className="h-5 w-5" />
@@ -204,9 +210,9 @@ export function MainHeader({userId}:{userId:string}) {
                   }
             
                   {/* Telegram */}
-                  {data?.telegramAccount &&  
+                  {data?.accountType === 'telegram' &&  
                   <Link
-                    href={data.email}
+                    href={data.account!}
                     className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
                   >
                     <TelegramIcon size={5} />

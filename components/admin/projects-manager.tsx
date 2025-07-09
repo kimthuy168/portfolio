@@ -25,7 +25,7 @@ type ProjectFormData = Omit<NewProject, "technologies"> & {
   technologies: string
 }
 export function ProjectsManager({ userId }: { userId: string }) {
-  const [projects, setProjects] = useState<Project[]>([])
+  const [projects, setProjects] = useState<Project[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -50,7 +50,7 @@ export function ProjectsManager({ userId }: { userId: string }) {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch("/api/projects")
+      const response = await fetch(`/api/projects/${userId}`)
       const data = await response.json()
       setProjects(data)
     } catch (error) {
@@ -283,7 +283,8 @@ export function ProjectsManager({ userId }: { userId: string }) {
       </div>
 
       <div className="grid gap-6">
-        {projects.map((project) => (
+        
+        {projects?.map((project) => (
           <Card key={project.id}>
             <CardHeader>
               <div className="flex justify-between items-start">

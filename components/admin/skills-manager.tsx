@@ -44,7 +44,7 @@ export function SkillsManager({ userId }: { userId: string }) {
 
   const fetchSkills = async () => {
     try {
-      const response = await fetch("/api/skills")
+      const response = await fetch(`/api/skills/${userId}`);
       if (!response.ok) throw new Error("Failed to fetch skills")
       const data = await response.json()
       setSkills(data)
@@ -196,7 +196,7 @@ export function SkillsManager({ userId }: { userId: string }) {
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[9999]">
                     {CategoriesJob.map((cat) => (
                       <SelectItem key={cat.value} value={cat.value}>
                         {cat.label}

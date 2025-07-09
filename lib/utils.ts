@@ -41,3 +41,11 @@ export const CategoriesJob = [
   { value: "Cloud", label: "Cloud", icon: Cloud },
   { value: "DevOps", label: "DevOps", icon: Cloud },
 ]
+
+
+export const AccountType = [
+  { value: "gibhub", label: "GitHub"},
+  { value: "linkin", label: "LinkIn"},
+  { value: "telegram", label: "Telegram"},
+]
+

@@ -1,6 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateExperience, deleteExperience } from "@/lib/db/queries"
+import { updateExperience, deleteExperience, getExperiencesByUserId } from "@/lib/db/queries"
 
+export async function GET(req: Request,context: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await context.params;
+    if (!id) {
+        return new Response('id is required', { status: 400 });
+    }
+    const experience = await getExperiencesByUserId(id)
+
+    return NextResponse.json(experience);
+  } catch (error) {
+    console.error('Failed to load chat detail', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const id = Number.parseInt(params.id)

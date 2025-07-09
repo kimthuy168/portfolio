@@ -1,10 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getProjectById, updateProject, deleteProject } from "@/lib/db/queries"
+import { updateProject, deleteProject, getProjectsByUserId } from "@/lib/db/queries"
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: Request,context: { params: Promise<{ id: string }> }) {
   try {
-    const id = Number.parseInt(params.id)
-    const project = await getProjectById(id)
+    const { id } = await context.params;
+    if (!id) {
+        return new Response('id is required', { status: 400 });
+    }
+    const project = await getProjectsByUserId(id)
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 })

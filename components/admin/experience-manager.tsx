@@ -5,10 +5,6 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
@@ -21,6 +17,10 @@ import {
 import { Plus, Edit, Trash2, CalendarDays, Building } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import type { Experience, NewExperience } from "@/lib/db/schema"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
+import { Textarea } from "../ui/textarea"
+import { Switch } from "../ui/switch"
 
 type ExperienceFormData = NewExperience & { userId: string }
 
@@ -48,8 +48,7 @@ export function ExperienceManager({ userId }: { userId: string }) {
 
   const fetchExperiences = async () => {
     try {
-      // If your API supports filtering by userId, add it here
-      const response = await fetch(`/api/experiences?userId=${encodeURIComponent(userId)}`)
+      const response = await fetch(`/api/experience/${userId}`)
       if (!response.ok) throw new Error("Failed to fetch experiences")
       const data = await response.json()
       setExperiences(data)
@@ -74,7 +73,7 @@ export function ExperienceManager({ userId }: { userId: string }) {
     }
 
     try {
-      const url = editingExperience ? `/api/experiences/${editingExperience.id}` : "/api/experiences"
+      const url = editingExperience ? `/api/experience/${editingExperience.id}` : "/api/experience"
       const method = editingExperience ? "PUT" : "POST"
 
       const response = await fetch(url, {
@@ -201,8 +200,75 @@ export function ExperienceManager({ userId }: { userId: string }) {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* form fields here, same as your original code */}
-              {/* ... */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="company">Company</Label>
+                  <Input id="company" name="company" value={formData.company} onChange={handleChange} required />
+                </div>
+                <div>
+                  <Label htmlFor="position">Position</Label>
+                  <Input id="position" name="position" value={formData.position} onChange={handleChange} required />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={4}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startDate">Start Date</Label>
+                  <Input
+                    id="startDate"
+                    name="startDate"
+                    type="date"
+                    value={formData?.startDate as any}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    name="endDate"
+                    type="date"
+                    value={formData?.endDate as any}
+                    onChange={handleChange}
+                    disabled={!!formData.current}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="current"
+                    checked={!!formData.current}
+                    onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, current: checked }))}
+                  />
+                  <Label htmlFor="current">Current Position</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="published"
+                    checked={formData?.published!}
+                    onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, published: checked }))}
+                  />
+                  <Label htmlFor="published">Published</Label>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">{editingExperience ? "Update" : "Create"} Experience</Button>
+              </div>
             </form>
           </DialogContent>
         </Dialog>

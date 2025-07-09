@@ -1,5 +1,5 @@
 {
-  "id": "5a3b57d2-4485-49ad-8fa9-1d0ba62e4da6",
+  "id": "fa005483-a657-443a-b5d9-cec24e49db3d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -177,9 +177,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "user_id": {
           "name": "user_id",
@@ -189,7 +190,7 @@
         },
         "social_account_id": {
           "name": "social_account_id",
-          "type": "integer",
+          "type": "uuid[]",
           "primaryKey": false,
           "notNull": false
         },
@@ -252,19 +253,6 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        },
-        "hero_sections_social_account_id_social_accounts_id_fk": {
-          "name": "hero_sections_social_account_id_social_accounts_id_fk",
-          "tableFrom": "hero_sections",
-          "tableTo": "social_accounts",
-          "columnsFrom": [
-            "social_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -279,9 +267,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "user_id": {
           "name": "user_id",
@@ -291,24 +280,12 @@
         },
         "social_account_id": {
           "name": "social_account_id",
-          "type": "integer",
+          "type": "uuid[]",
           "primaryKey": false,
           "notNull": false
         },
-        "user_name": {
-          "name": "user_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "description_myself": {
           "name": "description_myself",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -354,19 +331,6 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
-        },
-        "main_footers_social_account_id_social_accounts_id_fk": {
-          "name": "main_footers_social_account_id_social_accounts_id_fk",
-          "tableFrom": "main_footers",
-          "tableTo": "social_accounts",
-          "columnsFrom": [
-            "social_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -381,9 +345,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "user_id": {
           "name": "user_id",
@@ -393,21 +358,9 @@
         },
         "social_account_id": {
           "name": "social_account_id",
-          "type": "integer",
+          "type": "uuid[]",
           "primaryKey": false,
           "notNull": false
-        },
-        "user_name": {
-          "name": "user_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         },
         "published": {
           "name": "published",
@@ -437,19 +390,6 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "main_headers_social_account_id_social_accounts_id_fk": {
-          "name": "main_headers_social_account_id_social_accounts_id_fk",
-          "tableFrom": "main_headers",
-          "tableTo": "social_accounts",
-          "columnsFrom": [
-            "social_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -651,9 +591,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "user_id": {
           "name": "user_id",
@@ -661,20 +602,20 @@
           "primaryKey": false,
           "notNull": true
         },
-        "github_account": {
-          "name": "github_account",
+        "account": {
+          "name": "account",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "linkedin_account": {
-          "name": "linkedin_account",
+        "account_name": {
+          "name": "account_name",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "telegram_account": {
-          "name": "telegram_account",
+        "account_type": {
+          "name": "account_type",
           "type": "text",
           "primaryKey": false,
           "notNull": false
