@@ -19,7 +19,7 @@ export function AdminSidebar({userId}:{userId?: string}) {
   { name: "Projects", href: `/dashboard/projects/${userId}` , icon: FolderOpen },
   { name: "Skills", href: `/dashboard/skills/${userId}`, icon: Code },
   { name: "Experience", href: `/dashboard/experience/${userId}`, icon: Briefcase },
-  { name: "Messages", href:  `/dashboard/messages/${userId}`, icon: Mail },
+  { name: "Messages", href:  `/dashboard/message/${userId}`, icon: Mail },
   { name: "Hero", href: `/dashboard/hero/${userId}`, icon: UserCircle },
   { name: "Main Header", href: `/dashboard/main-header/${userId}`, icon: Layers },
   { name: "Main Footer", href: `/dashboard/main-footer/${userId}`, icon: Layers2 },

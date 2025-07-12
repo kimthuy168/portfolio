@@ -1,21 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getAllContacts, createContact } from "@/lib/db/queries"
-
-export async function GET() {
-  try {
-    const result = await getAllContacts()
-    return NextResponse.json(result)
-  } catch (error) {
-    console.error("Error fetching contact messages:", error)
-    return NextResponse.json({ error: "Failed to fetch contact messages" }, { status: 500 })
-  }
-}
+import { createContact } from "@/lib/db/queries"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const result = await createContact(body)
-    return NextResponse.json(result[0], { status: 201 })
+    return NextResponse.json(result, { status: 201 })
   } catch (error) {
     console.error("Error creating contact message:", error)
     return NextResponse.json({ error: "Failed to create contact message" }, { status: 500 })

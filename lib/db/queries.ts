@@ -3,6 +3,7 @@ import 'server-only';
 import {
   and,
   asc,
+  count,
   desc,
   eq,
   inArray,
@@ -546,5 +547,20 @@ export async function getUserWithSocialByUserId(id: string) {
   return {
     ...user,
     socialAccounts: socialAccountsResult,
+  }
+}
+
+export async function getAllDataUserDataById(userId: string) {
+
+  const [projectResult] = await db.select({ count: count() }).from(projects).where(eq(projects.userId, userId));
+  const [skillResult] = await db.select({ count: count() }).from(skills).where(eq(skills.userId, userId));
+  const [experienceResult] = await db.select({ count: count() }).from(experiences).where(eq(experiences.userId, userId));
+  const [messageResult] = await db.select({ count: count() }).from(contact).where(eq(contact.userId, userId));
+
+  return {
+    totalProjects: Number(projectResult.count),
+    totalSkills: Number(skillResult.count),
+    totalExperience: Number(experienceResult.count),
+    totalMessages: Number(messageResult.count),
   }
 }

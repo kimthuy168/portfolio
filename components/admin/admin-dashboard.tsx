@@ -8,11 +8,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { signOut } from "next-auth/react"
 import { ContactManager, ExperienceManager, HeroManager, MainFooterManager, MainHeaderManager, ProjectsManager, SkillsManager, SocialAccountManager } from "@/components/admin"
+import { DashboardChart } from "./dashboard-chart"
+import useSWR from "swr"
+
+type DataResponse = {
+  totalProjects: number
+  totalSkills: number
+  totalExperience: number
+  totalMessages: number
+}
+
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export function AdminDashboard({userId}:{userId?: string}) {
   const [activeTab, setActiveTab] = useState("overview")
   const { toast } = useToast()
-
+  const { data: chartData, error, isLoading } = useSWR<DataResponse>(
+       `/api/dashboard/${userId}`,
+       fetcher
+     )
   const handleLogout = async () => {
     try {
       await signOut({redirectTo: '/',})
@@ -91,7 +105,7 @@ export function AdminDashboard({userId}:{userId?: string}) {
                   <FolderOpen className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">12</div>
+                  <div className="text-2xl font-bold">{chartData?.totalProjects ?? 0}</div>
                   <p className="text-xs text-muted-foreground">+2 from last month</p>
                 </CardContent>
               </Card>
@@ -101,7 +115,7 @@ export function AdminDashboard({userId}:{userId?: string}) {
                   <Code className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">24</div>
+                  <div className="text-2xl font-bold">{chartData?.totalSkills ?? 0}</div>
                   <p className="text-xs text-muted-foreground">Across 4 categories</p>
                 </CardContent>
               </Card>
@@ -111,7 +125,7 @@ export function AdminDashboard({userId}:{userId?: string}) {
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">3</div>
+                  <div className="text-2xl font-bold">{chartData?.totalExperience ?? 0}</div>
                   <p className="text-xs text-muted-foreground">Companies worked with</p>
                 </CardContent>
               </Card>
@@ -121,11 +135,14 @@ export function AdminDashboard({userId}:{userId?: string}) {
                   <Mail className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">8</div>
+                  <div className="text-2xl font-bold">{chartData?.totalMessages ?? 0}</div>
                   <p className="text-xs text-muted-foreground">5 unread</p>
                 </CardContent>
               </Card>
             </div>
+
+            {/* chart view */}
+             <DashboardChart chartData={chartData!} isLoading={isLoading} error={error}/>
 
             <Card>
               <CardHeader>

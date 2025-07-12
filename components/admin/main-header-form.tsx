@@ -134,10 +134,12 @@ export function MainHeaderManager({ userId }: { userId: string }) {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
+            {header!.socialAccounts?.length <= 1 && (
             <Button onClick={resetForm}>
               <Plus className="mr-2 h-4 w-4" />
               Add Header
             </Button>
+            )}
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>

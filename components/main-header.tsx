@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -18,29 +18,27 @@ const navigation = [
 ]
 
 type MainHeaderResponse = {
-  id: string;
-  userId: string;
-  createdAt: string; 
-  socialAccountId: string[];
-  userName: string;
-  userEmail: string;
+  id: string
+  userId: string
+  createdAt: string
+  socialAccountId: string[]
+  userName: string
+  userEmail: string
+  account?: string | null
+  accountName?: string | null
+  accountType?: string | null
+}
 
-  account?: string | null;
-  accountName?: string | null;
-  accountType?: string | null;
-};
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-export function MainHeader({userId}:{userId:string}) {
+export function MainHeader({ userId }: { userId: string }) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [activeSection, setActiveSection] = useState("home")
 
-  const { data, error, isLoading } = useSWR<MainHeaderResponse>(
+  const { data: headerData, isLoading } = useSWR<MainHeaderResponse>(
     `/api/main-header/${userId}`,
     fetcher
-  );
+  )
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,7 +46,7 @@ export function MainHeader({userId}:{userId:string}) {
     }
 
     const handleSectionChange = () => {
-      const sections = navigation.map((item) => item.href.substring(1))
+      const sections = navigation.map(item => item.href.substring(1))
       const scrollPosition = window.scrollY + 100
 
       for (const section of sections) {
@@ -79,23 +77,42 @@ export function MainHeader({userId}:{userId:string}) {
     }
   }
 
+  const SocialLink = ({ type, url }: { type: string; url: string }) => {
+    const colorClass = cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")
+    switch (type) {
+      case "github":
+        return <Link href={url} className={colorClass}><Github className="h-5 w-5" /></Link>
+      case "linkedin":
+        return <Link href={url} className={colorClass}><Linkedin className="h-5 w-5" /></Link>
+      case "telegram":
+        return <Link href={url} className={colorClass}><TelegramIcon size={5} /></Link>
+      case "email":
+        return <Link href={`mailto:${url}`} className={colorClass}><Mail className="h-5 w-5" /></Link>
+      default:
+        return null
+    }
+  }
+
   return (
     <header
       className={cn(
         "fixed top-0 w-full z-50 transition-all duration-300",
-        isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-b" : "bg-transparent",
+        isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-b" : "bg-transparent"
       )}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
+
           {/* Logo */}
           <Link href="/" className="font-bold text-xl">
-            <span className={cn("transition-colors", isScrolled ? "text-gray-900" : "text-white")}>{data?.userName}</span>
+            <span className={cn("transition-colors", isScrolled ? "text-gray-900" : "text-white")}>
+              {headerData?.userName || "Portfolio"}
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
+            {navigation.map(item => (
               <button
                 key={item.name}
                 onClick={() => scrollToSection(item.href)}
@@ -105,7 +122,7 @@ export function MainHeader({userId}:{userId:string}) {
                     ? "text-blue-600"
                     : isScrolled
                       ? "text-gray-700"
-                      : "text-gray-300",
+                      : "text-gray-300"
                 )}
               >
                 {item.name}
@@ -113,44 +130,14 @@ export function MainHeader({userId}:{userId:string}) {
             ))}
           </nav>
 
-          {/* Social Links */}
+          {/* Social Links (desktop) */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* GitHub*/}
-            {data?.accountType === 'github' &&  
-            <Link
-              href={data?.account!}
-              className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
-            >
-              <Github className="h-5 w-5" />
-            </Link>
-            }
-          {/* Linkedin*/}
-           {data?.accountType === 'linkin' && 
-           <Link
-              href={data?.account!}
-              className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
-            >
-              <Linkedin className="h-5 w-5" />
-            </Link>}
-
-            {/* Email */}
-            {data?.userEmail && 
-            <Link
-              href={data.userEmail}
-              className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
-            >
-              <Mail className="h-5 w-5" />
-            </Link>}
-            
-             {/* Telegram */}
-            {data?.accountType === 'telegram' &&  
-            <Link
-              href={data.account!}
-              className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
-            >
-              <TelegramIcon size={5} />
-            </Link>}
-
+            {headerData?.account && headerData.accountType && (
+              <SocialLink type={headerData.accountType} url={headerData.account} />
+            )}
+            {headerData?.userEmail && (
+              <SocialLink type="email" url={headerData.userEmail} />
+            )}
           </div>
 
           {/* Mobile Menu */}
@@ -166,13 +153,13 @@ export function MainHeader({userId}:{userId:string}) {
                   <span className="font-bold text-xl">Menu</span>
                 </div>
                 <nav className="flex flex-col space-y-4">
-                  {navigation.map((item) => (
+                  {navigation.map(item => (
                     <button
                       key={item.name}
                       onClick={() => scrollToSection(item.href)}
                       className={cn(
                         "text-left text-lg font-medium transition-colors hover:text-blue-600",
-                        activeSection === item.href.substring(1) ? "text-blue-600" : "text-gray-700",
+                        activeSection === item.href.substring(1) ? "text-blue-600" : "text-gray-700"
                       )}
                     >
                       {item.name}
@@ -180,44 +167,12 @@ export function MainHeader({userId}:{userId:string}) {
                   ))}
                 </nav>
                 <div className="flex space-x-4 pt-6 border-t">
-                  {/* GitHub*/}
-                  {data?.accountType === 'github' &&  
-                  <Link
-                    href={data?.account!}
-                    className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
-                  >
-                    <Github className="h-5 w-5" />
-                  </Link>
-                  }
-                {/* Linkedin*/}
-                {data?.accountType === 'linkin' && 
-                <Link
-                    href={data?.account!}
-                    className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
-                  >
-                    <Linkedin className="h-5 w-5" />
-                  </Link>
-                  }
-
-                  {/* Email */}
-                  {data?.userEmail && 
-                  <Link
-                    href={data.userEmail}
-                    className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
-                  >
-                    <Mail className="h-5 w-5" />
-                  </Link>
-                  }
-            
-                  {/* Telegram */}
-                  {data?.accountType === 'telegram' &&  
-                  <Link
-                    href={data.account!}
-                    className={cn("transition-colors hover:text-blue-600", isScrolled ? "text-gray-700" : "text-gray-300")}
-                  >
-                    <TelegramIcon size={5} />
-                  </Link>
-                  }
+                  {headerData?.account && headerData.accountType && (
+                    <SocialLink type={headerData.accountType} url={headerData.account} />
+                  )}
+                  {headerData?.userEmail && (
+                    <SocialLink type="email" url={headerData.userEmail} />
+                  )}
                 </div>
               </div>
             </SheetContent>

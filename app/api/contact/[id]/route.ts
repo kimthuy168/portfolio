@@ -1,6 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateContactReadStatus, deleteContact } from "@/lib/db/queries"
+import { updateContactReadStatus, deleteContact, getContactsByUserId } from "@/lib/db/queries"
 
+export async function GET(req: Request,context: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await context.params;
+    if (!id) {
+        return new Response('id is required', { status: 400 });
+    }
+    const result = await getContactsByUserId(id)
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('Failed to load  detail', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const id = Number.parseInt(params.id)

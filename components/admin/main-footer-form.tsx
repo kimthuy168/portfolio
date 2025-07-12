@@ -142,10 +142,12 @@ export function MainFooterManager({ userId }: { userId: string }) {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
+            {footers!.socialAccounts?.length <= 1 && (
             <Button onClick={resetForm}>
               <Plus className="mr-2 h-4 w-4" />
               Add Footer
             </Button>
+            )}
           </DialogTrigger>
           <DialogContent className="max-w-xl">
             <DialogHeader>

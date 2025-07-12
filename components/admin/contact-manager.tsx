@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,35 +10,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Mail, Eye, Trash2, Calendar, User, MessageSquare } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import type { Contact } from "@/lib/db/schema"
+import useSWR from "swr"
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export function ContactManager({ userId }: { userId: string }) {
-  const [contacts, setContacts] = useState<Contact[]>([])
-  const [loading, setLoading] = useState(true)
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchContacts()
-  }, [userId])
-
-  const fetchContacts = async () => {
-    try {
-      const response = await fetch(`/api/contact/${userId}`)
-      if (!response.ok) throw new Error("Failed to fetch contacts")
-      const data = await response.json()
-      setContacts(data)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch contact messages",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  const { data: contacts, isLoading } = useSWR<Contact[]>(`/api/contact/${userId}`, fetcher)
+  
   const handleMarkAsRead = async (id: number) => {
     try {
       const response = await fetch(`/api/contact/${id}`, {
@@ -48,7 +30,6 @@ export function ContactManager({ userId }: { userId: string }) {
       })
       if (response.ok) {
         toast({ title: "Success", description: "Message marked as read" })
-        fetchContacts()
       } else throw new Error("Failed to mark as read")
     } catch {
       toast({
@@ -65,7 +46,6 @@ export function ContactManager({ userId }: { userId: string }) {
       const response = await fetch(`/api/contact/${id}`, { method: "DELETE" })
       if (response.ok) {
         toast({ title: "Success", description: "Message deleted successfully" })
-        fetchContacts()
       } else throw new Error("Failed to delete message")
     } catch {
       toast({
@@ -91,10 +71,10 @@ export function ContactManager({ userId }: { userId: string }) {
       minute: "2-digit",
     })
 
-  const unreadMessages = contacts.filter((c) => !c.read)
-  const readMessages = contacts.filter((c) => c.read)
+  const unreadMessages = contacts?.filter((c) => !c.read)
+  const readMessages = contacts?.filter((c) => c.read)
 
-  if (loading) return <div>Loading contact messages...</div>
+  if (isLoading) return <div>Loading contact messages...</div>
 
   return (
     <div className="space-y-6">
@@ -105,10 +85,10 @@ export function ContactManager({ userId }: { userId: string }) {
         </div>
         <div className="flex items-center space-x-4">
           <Badge variant="secondary" className="text-sm">
-            {unreadMessages.length} Unread
+            {unreadMessages!.length} Unread
           </Badge>
           <Badge variant="outline" className="text-sm">
-            {contacts.length} Total
+            {contacts!.length} Total
           </Badge>
         </div>
       </div>
@@ -117,24 +97,24 @@ export function ContactManager({ userId }: { userId: string }) {
         <TabsList>
           <TabsTrigger value="unread" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            Unread ({unreadMessages.length})
+            Unread ({unreadMessages!.length})
           </TabsTrigger>
           <TabsTrigger value="read" className="flex items-center gap-2">
             <Eye className="h-4 w-4" />
-            Read ({readMessages.length})
+            Read ({readMessages!.length})
           </TabsTrigger>
           <TabsTrigger value="all" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
-            All ({contacts.length})
+            All ({contacts!.length})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="unread" className="space-y-4">
-          {unreadMessages.length === 0 ? (
+          {unreadMessages!.length === 0 ? (
             <EmptyCard icon={<Mail className="h-12 w-12 mx-auto text-gray-400 mb-4" />} text="No unread messages" />
           ) : (
             <ContactList
-              contacts={unreadMessages}
+              contacts={unreadMessages!}
               onView={handleViewMessage}
               onDelete={handleDelete}
               formatDate={formatDate}
@@ -143,11 +123,11 @@ export function ContactManager({ userId }: { userId: string }) {
         </TabsContent>
 
         <TabsContent value="read" className="space-y-4">
-          {readMessages.length === 0 ? (
+          {readMessages!.length === 0 ? (
             <EmptyCard icon={<Eye className="h-12 w-12 mx-auto text-gray-400 mb-4" />} text="No read messages" />
           ) : (
             <ContactList
-              contacts={readMessages}
+              contacts={readMessages!}
               onView={handleViewMessage}
               onDelete={handleDelete}
               formatDate={formatDate}
@@ -157,7 +137,7 @@ export function ContactManager({ userId }: { userId: string }) {
 
         <TabsContent value="all" className="space-y-4">
           <ContactList
-            contacts={contacts}
+            contacts={contacts!}
             onView={handleViewMessage}
             onDelete={handleDelete}
             formatDate={formatDate}

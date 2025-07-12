@@ -10,7 +10,7 @@ export async function GET(req: Request,context: { params: Promise<{ id: string }
     }
 
   const userProfile = await getUserWithSocialByUserId(id)
-  console.log("data:", userProfile);
+
   if (!userProfile) {
     return NextResponse.json({ error: "User not found" }, { status: 404 })
   }
